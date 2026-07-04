@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Subscription &amp; Expense Tracker</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        /* ---------- RESET & BASE ---------- */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #1c2333;
+            --bg-input: #0d1117;
+            --border-color: #30363d;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --text-muted: #484f58;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --accent-orange: #d29922;
+            --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            --radius: 12px;
+            --radius-sm: 6px;
+            --transition: 0.2s ease;
+            --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        /* ---------- APP SHELL ---------- */
+        .app {
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* ---------- HEADER ---------- */
+        .app-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            gap: 16px;
+        }
+
+        .app-header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .app-header h1 i {
+            color: var(--accent-blue);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .header-actions .badge {
+            background: var(--bg-card);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .header-actions .badge i {
+            margin-right: 6px;
+            color: var(--accent-green);
+        }
+
+        /* ---------- METRICS BAR ---------- */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 18px 22px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: border-color var(--transition), transform var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        .metric-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+        }
+
+        .metric-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(88, 166, 255, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--accent-blue);
+            flex-shrink: 0;
+        }
+
+        .metric-icon.green {
+            background: rgba(63, 185, 80, 0.12);
+            color: var(--accent-green);
+        }
+
+        .metric-icon.orange {
+            background: rgba(210, 153, 34, 0.12);
+            color: var(--accent-orange);
+        }
+
+        .metric-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-top: 2px;
+        }
+
+        .metric-value .currency {
+            font-weight: 400;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-right: 2px;
+        }
+
+        /* ---------- CARD CONTAINER ---------- */
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 24px 28px;
+            margin-bottom: 28px;
+            box-shadow: var(--shadow);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title i {
+            color: var(--accent-blue);
+        }
+
+        /* ---------- FORM ---------- */
+        .subscription-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: var(--text-secondary);
+        }
+
+        .form-group input,
+        .form-group select {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-family: var(--font);
+            transition: border-color var(--transition), box-shadow var(--transition);
+            width: 100%;
+            outline: none;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
+        }
+
+        .form-group input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .form-group select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238b949e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 38px;
+        }
+
+        .form-group select option {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 22px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.9rem;
+            font-family: var(--font);
+            cursor: pointer;
+            transition: background var(--transition), transform var(--transition),
+                box-shadow var(--transition);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            color: #0d1117;
+            border-color: var(--accent-blue);
+        }
+
+        .btn-primary:hover {
+            background: #4c96e8;
+            transform: scale(1.02);
+            box-shadow: 0 4px 16px rgba(88, 166, 255, 0.25);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.97);
+        }
+
+        .btn-danger {
+            background: transparent;
+            color: var(--accent-red);
+            border-color: var(--accent-red);
+        }
+
+        .btn-danger:hover {
+            background: rgba(248, 81, 73, 0.12);
+        }
+
+        .btn-sm {
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            gap: 4px;
+        }
+
+        /* ---------- ERROR MESSAGE ---------- */
+        .error-banner {
+            background: rgba(248, 81, 73, 0.12);
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+            padding: 10px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            margin-top: 14px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .error-banner.visible {
+            display: flex;
+        }
+
+        .error-banner i {
+            font-size: 1rem;
+        }
+
+        /* ---------- TABLE ---------- */
+        .table-wrapper {
+            overflow-x: auto;
+            margin-top: 4px;
+        }
+
+        .subscription-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .subscription-table thead th {
+            text-align: left;
+            padding: 12px 14px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        .subscription-table tbody td {
+            padding: 14px 14px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        .subscription-table tbody tr {
+            transition: background var(--transition);
+        }
+
+        .subscription-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .subscription-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .subscription-table .service-name {
+            font-weight: 500;
+        }
+
+        .subscription-table .cost {
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .subscription-table .cycle-badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: capitalize;
+            background: rgba(88, 166, 255, 0.12);
+            color: var(--accent-blue);
+        }
+
+        .subscription-table .cycle-badge.annual {
+            background: rgba(210, 153, 34, 0.12);
+            color: var(--accent-orange);
+        }
+
+        .subscription-table .renewal-date {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .subscription-table .delete-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 6px 10px;
+            border-radius: var(--radius-sm);
+            transition: color var(--transition), background var(--transition);
+        }
+
+        .subscription-table .delete-btn:hover {
+            color: var(--accent-red);
+            background: rgba(248, 81, 73, 0.08);
+        }
+
+        /* ---------- EMPTY STATE ---------- */
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .empty-state p {
+            font-size: 1rem;
+            max-width: 360px;
+            margin: 0 auto;
+        }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (max-width: 768px) {
+            body {
+                padding: 16px;
+            }
+
+            .app-header h1 {
+                font-size: 1.3rem;
+            }
+
+            .card {
+                padding: 18px 16px;
+            }
+
+            .subscription-form {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .form-actions .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .metric-value {
+                font-size: 1.2rem;
+            }
+
+            .subscription-table thead th,
+            .subscription-table tbody td {
+                padding: 10px 10px;
+                font-size: 0.8rem;
+            }
+
+            .subscription-table .cycle-badge {
+                font-size: 0.6rem;
+                padding: 1px 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .app-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+
+            .header-actions {
+                justify-content: space-between;
+            }
+        }
+
+        /* ---------- SCROLLBAR ---------- */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="app" id="app">
+        <!-- HEADER -->
+        <header class="app-header">
+            <h1><i class="fas fa-wallet"></i> Subscription Tracker</h1>
+            <div class="header-actions">
+                <span class="badge"><i class="fas fa-database"></i> <span id="totalCount">0</span> subscriptions</span>
+                <button class="btn btn-sm" id="clearAllBtn" title="Clear all data">
+                    <i class="fas fa-trash-alt"></i> Clear All
+                </button>
+            </div>
+        </header>
+
+        <!-- METRICS -->
+        <section class="metrics-grid" id="metricsGrid">
+            <div class="metric-card">
+                <div class="metric-icon"><i class="fas fa-dollar-sign"></i></div>
+                <div class="metric-content">
+                    <div class="metric-label">Total Monthly Spend</div>
+                    <div class="metric-value" id="totalMonthlySpend"><span class="currency">$</span>0.00</div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon green"><i class="fas fa-list-check"></i></div>
+                <div class="metric-content">
+                    <div class="metric-label">Active Subscriptions</div>
+                    <div class="metric-value" id="activeSubscriptions">0</div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon orange"><i class="fas fa-calendar-day"></i></div>
+                <div class="metric-content">
+                    <div class="metric-label">Next Payment Due</div>
+                    <div class="metric-value" id="nextPaymentDue">—</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ADD SUBSCRIPTION FORM -->
+        <section class="card" id="formCard">
+            <div class="card-title"><i class="fas fa-plus-circle"></i> Add Subscription</div>
+            <form id="subscriptionForm" novalidate>
+                <div class="subscription-form">
+                    <div class="form-group">
+                        <label for="serviceName">Service Name</label>
+                        <input type="text" id="serviceName" placeholder="e.g. Netflix" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="cost">Cost ($)</label>
+                        <input type="text" id="cost" placeholder="0.00" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="billingCycle">Billing Cycle</label>
+                        <select id="billingCycle">
+                            <option value="Monthly">Monthly</option>
+                            <option value="Annual">Annual</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="nextRenewal">Next Renewal Date</label>
+                        <input type="date" id="nextRenewal" required />
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <i class="fas fa-save"></i> Add Subscription
+                        </button>
+                        <button type="reset" class="btn" id="resetBtn">
+                            <i class="fas fa-undo"></i> Reset
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <div class="error-banner" id="errorBanner">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="errorMessage">Please fix the errors above.</span>
+            </div>
+        </section>
+
+        <!-- SUBSCRIPTION TABLE -->
+        <section class="card">
+            <div class="card-title"><i class="fas fa-table"></i> Your Subscriptions</div>
+            <div class="table-wrapper">
+                <table class="subscription-table" id="subscriptionTable">
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Cost</th>
+                            <th>Cycle</th>
+                            <th>Next Renewal</th>
+                            <th style="text-align:right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Rows rendered by JS -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="emptyState" class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>No subscriptions yet. Add your first subscription above!</p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ---------- STATE ----------
+            const STORAGE_KEY = 'subscription_tracker_data';
+            let subscriptions = [];
+
+            // ---------- DOM REFS ----------
+            const form = document.getElementById('subscriptionForm');
+            const serviceNameInput = document.getElementById('serviceName');
+            const costInput = document.getElementById('cost');
+            const billingCycleSelect = document.getElementById('billingCycle');
+            const nextRenewalInput = document.getElementById('nextRenewal');
+            const submitBtn = document.getElementById('submitBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const tableBody = document.getElementById('tableBody');
+            const emptyState = document.getElementById('emptyState');
+            const errorBanner = document.getElementById('errorBanner');
+            const errorMessage = document.getElementById('errorMessage');
+            const totalMonthlySpendEl = document.getElementById('totalMonthlySpend');
+            const activeSubscriptionsEl = document.getElementById('activeSubscriptions');
+            const nextPaymentDueEl = document.getElementById('nextPaymentDue');
+            const totalCountEl = document.getElementById('totalCount');
+            const clearAllBtn = document.getElementById('clearAllBtn');
+
+            // ---------- UTILITY: SANITIZE ----------
+            function sanitizeHTML(str) {
+                if (!str) return '';
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#x27;',
+                    '/': '&#x2F;',
+                };
+                return String(str).replace(/[&<>"'/]/g, function(s) {
+                    return map[s];
+                });
+            }
+
+            // ---------- UTILITY: VALIDATE DATE ----------
+            function isValidDate(dateString) {
+                if (!dateString) return false;
+                const d = new Date(dateString);
+                return d instanceof Date && !isNaN(d) && dateString === d.toISOString().split('T')[0];
+            }
+
+            // ---------- UTILITY: PARSE COST ----------
+            function parseCost(value) {
+                if (typeof value === 'number') return value;
+                const cleaned = String(value).replace(/[^0-9.\-]/g, '').trim();
+                if (cleaned === '') return NaN;
+                const num = parseFloat(cleaned);
+                return isNaN(num) ? NaN : num;
+            }
+
+            // ---------- ERROR HANDLING ----------
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorBanner.classList.add('visible');
+                // Auto-hide after 6s
+                clearTimeout(window._errorTimer);
+                window._errorTimer = setTimeout(function() {
+                    errorBanner.classList.remove('visible');
+                }, 6000);
+            }
+
+            function hideError() {
+                errorBanner.classList.remove('visible');
+                clearTimeout(window._errorTimer);
+            }
+
+            // ---------- LOCAL STORAGE ----------
+            function loadFromStorage() {
+                try {
+                    const stored = localStorage.getItem(STORAGE_KEY);
+                    if (stored) {
+                        const parsed = JSON.parse(stored);
+                        if (Array.isArray(parsed)) {
+                            subscriptions = parsed;
+                            return;
+                        }
+                    }
+                } catch (_) { /* ignore */ }
+                subscriptions = [];
+            }
+
+            function saveToStorage() {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(subscriptions));
+                } catch (_) { /* ignore */ }
+            }
+
+            // ---------- ID GENERATION ----------
+            function generateId() {
+                return Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
+            }
+
+            // ---------- COMPUTE METRICS ----------
+            function computeMetrics() {
+                // Total monthly spend: sum of monthly-equivalent costs
+                let monthlyTotal = 0;
+                let activeCount = subscriptions.length;
+
+                subscriptions.forEach(function(sub) {
+                    const cost = sub.cost || 0;
+                    if (sub.cycle === 'Annual') {
+                        monthlyTotal += cost / 12;
+                    } else {
+                        monthlyTotal += cost;
+                    }
+                });
+
+                // Next payment due: earliest renewal date among all subscriptions
+                let nextDate = null;
+                subscriptions.forEach(function(sub) {
+                    if (sub.renewal) {
+                        const d = new Date(sub.renewal);
+                        if (!isNaN(d)) {
+                            if (nextDate === null || d < nextDate) {
+                                nextDate = d;
+                            }
+                        }
+                    }
+                });
+
+                return {
+                    monthlyTotal: monthlyTotal,
+                    activeCount: activeCount,
+                    nextDate: nextDate
+                };
+            }
+
+            // ---------- RENDER UI ----------
+            function render() {
+                // --- Table ---
+                if (subscriptions.length === 0) {
+                    tableBody.innerHTML = '';
+                    emptyState.style.display = 'block';
+                } else {
+                    emptyState.style.display = 'none';
+                    let html = '';
+                    subscriptions.forEach(function(sub, index) {
+                        const safeName = sanitizeHTML(sub.name || 'Unnamed');
+                        const costDisplay = (typeof sub.cost === 'number' && !isNaN(sub.cost)) ?
+                            sub.cost.toFixed(2) :
+                            '0.00';
+                        const cycleClass = sub.cycle === 'Annual' ? 'annual' : '';
+                        const cycleLabel = sanitizeHTML(sub.cycle || 'Monthly');
+                        const renewalDisplay = sub.renewal ? sanitizeHTML(sub.renewal) : '—';
+
+                        html += '<tr>';
+                        html += '<td class="service-name">' + safeName + '</td>';
+                        html += '<td class="cost">$' + costDisplay + '</td>';
+                        html += '<td><span class="cycle-badge ' + cycleClass + '">' + cycleLabel +
+                        '</span></td>';
+                        html += '<td class="renewal-date">' + renewalDisplay + '</td>';
+                        html += '<td style="text-align:right;">';
+                        html += '<button class="delete-btn" data-id="' + sanitizeHTML(sub.id) +
+                            '" aria-label="Delete subscription">';
+                        html += '<i class="fas fa-trash-alt"></i>';
+                        html += '</button>';
+                        html += '</td>';
+                        html += '</tr>';
+                    });
+                    tableBody.innerHTML = html;
+
+                    // Attach delete events
+                    document.querySelectorAll('.delete-btn').forEach(function(btn) {
+                        btn.addEventListener('click', function(e) {
+                            const id = this.getAttribute('data-id');
+                            if (id) {
+                                deleteSubscription(id);
+                            }
+                        });
+                    });
+                }
+
+                // --- Metrics ---
+                const metrics = computeMetrics();
+                totalMonthlySpendEl.innerHTML = '<span class="currency">$</span>' + metrics.monthlyTotal.toFixed(2);
+                activeSubscriptionsEl.textContent = metrics.activeCount;
+                totalCountEl.textContent = metrics.activeCount;
+
+                if (metrics.nextDate) {
+                    const dateStr = metrics.nextDate.toISOString().split('T')[0];
+                    // Format as MMM DD, YYYY
+                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    const m = months[metrics.nextDate.getMonth()];
+                    const d = metrics.nextDate.getDate();
+                    const y = metrics.nextDate.getFullYear();
+                    nextPaymentDueEl.textContent = m + ' ' + d + ', ' + y;
+                } else {
+                    nextPaymentDueEl.textContent = '—';
+                }
+
+                // Save to storage after each render
+                saveToStorage();
+            }
+
+            // ---------- CRUD: ADD ----------
+            function addSubscription(event) {
+                event.preventDefault();
+                hideError();
+
+                // 1. Get values
+                const nameRaw = serviceNameInput.value.trim();
+                const costRaw = costInput.value.trim();
+                const cycle = billingCycleSelect.value;
+                const renewalRaw = nextRenewalInput.value.trim();
+
+                // 2. Validate: name
+                if (nameRaw === '') {
+                    showError('Service name is required.');
+                    serviceNameInput.focus();
+                    return;
+                }
+                if (nameRaw.length > 120) {
+                    showError('Service name must be 120 characters or less.');
+                    serviceNameInput.focus();
+                    return;
+                }
+
+                // 3. Validate: cost
+                const costNum = parseCost(costRaw);
+                if (isNaN(costNum)) {
+                    showError('Please enter a valid cost (e.g. 9.99).');
+                    costInput.focus();
+                    return;
+                }
+                if (costNum < 0) {
+                    showError('Cost cannot be negative.');
+                    costInput.focus();
+                    return;
+                }
+                if (costNum > 99999999) {
+                    showError('Cost is too large.');
+                    costInput.focus();
+                    return;
+                }
+
+                // 4. Validate: renewal date
+                if (renewalRaw === '') {
+                    showError('Please select a next renewal date.');
+                    nextRenewalInput.focus();
+                    return;
+                }
+                if (!isValidDate(renewalRaw)) {
+                    showError('Please enter a valid date in YYYY-MM-DD format.');
+                    nextRenewalInput.focus();
+                    return;
+                }
+                const renewalDate = new Date(renewalRaw);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                if (renewalDate < today) {
+                    showError('Renewal date cannot be in the past.');
+                    nextRenewalInput.focus();
+                    return;
+                }
+
+                // 5. Build subscription object
+                const newSub = {
+                    id: generateId(),
+                    name: nameRaw.slice(0, 120),
+                    cost: costNum,
+                    cycle: cycle,
+                    renewal: renewalRaw,
+                };
+
+                // 6. Add to array
+                subscriptions.push(newSub);
+
+                // 7. Reset form
+                form.reset();
+                // Set default date to 1 month from now for convenience
+                const defaultDate = new Date();
+                defaultDate.setMonth(defaultDate.getMonth() + 1);
+                nextRenewalInput.value = defaultDate.toISOString().split('T')[0];
+                costInput.value = '';
+
+                // 8. Re-render
+                render();
+
+                // 9. Focus on service name for next entry
+                serviceNameInput.focus();
+            }
+
+            // ---------- CRUD: DELETE ----------
+            function deleteSubscription(id) {
+                if (!id) return;
+                const index = subscriptions.findIndex(function(sub) {
+                    return sub.id === id;
+                });
+                if (index === -1) return;
+                // Confirm? We'll skip for UX speed, but we could add a lightweight confirm.
+                subscriptions.splice(index, 1);
+                render();
+            }
+
+            // ---------- CRUD: CLEAR ALL ----------
+            function clearAll() {
+                if (subscriptions.length === 0) return;
+                if (window.confirm('Delete all subscriptions permanently?')) {
+                    subscriptions = [];
+                    render();
+                }
+            }
+
+            // ---------- SET DEFAULT DATE ----------
+            function setDefaultRenewalDate() {
+                const now = new Date();
+                now.setMonth(now.getMonth() + 1);
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                nextRenewalInput.value = year + '-' + month + '-' + day;
+            }
+
+            // ---------- RESET FORM ----------
+            function resetForm() {
+                hideError();
+                form.reset();
+                setDefaultRenewalDate();
+                serviceNameInput.focus();
+            }
+
+            // ---------- INIT ----------
+            function init() {
+                // Load data
+                loadFromStorage();
+
+                // Set default date
+                setDefaultRenewalDate();
+
+                // Render initial UI
+                render();
+
+                // Event listeners
+                form.addEventListener('submit', addSubscription);
+                resetBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    resetForm();
+                });
+                clearAllBtn.addEventListener('click', clearAll);
+
+                // Auto-hide error on input change
+                document.querySelectorAll('#subscriptionForm input, #subscriptionForm select').forEach(function(el) {
+                    el.addEventListener('input', hideError);
+                    el.addEventListener('change', hideError);
+                });
+
+                // Extra: if user clicks outside error, hide
+                document.addEventListener('click', function(e) {
+                    if (errorBanner.classList.contains('visible')) {
+                        const target = e.target;
+                        if (!errorBanner.contains(target) && !form.contains(target)) {
+                            hideError();
+                        }
+                    }
+                });
+
+                console.log('Smart Subscription Tracker initialized.');
+                console.log('Total subscriptions loaded:', subscriptions.length);
+            }
+
+            // Run when DOM ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+
+        })();
+    </script>
+</body>
+</html>
